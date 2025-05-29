@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosCliente = axios.create({
-  baseURL: 'https://tfg-bacl-production.up.railway.app/api',
+  baseURL: 'https://beige-newt-423448.hostingersite.com/api',
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
