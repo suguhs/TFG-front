@@ -1,29 +1,27 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axiosCliente from './AxiosCliente';
 
 const PedidoDomicilio = () => {
-  const [platos, setPlatos] = useState([]); // aquí guardamos todos los platos del menú
-  const [seleccionados, setSeleccionados] = useState([]); // aquí los que el cliente va eligiendo
+  const [platos, setPlatos] = useState([]);
+  const [seleccionados, setSeleccionados] = useState([]);
   const [mensaje, setMensaje] = useState('');
   const [direccion, setDireccion] = useState('');
+  const navigate = useNavigate();
 
-  const usuario = JSON.parse(localStorage.getItem('usuario')); // sacamos al usuario del localStorage
+  const usuario = JSON.parse(localStorage.getItem('usuario'));
 
-  // Al cargar la página, pedimos los platos al backend
   useEffect(() => {
     axiosCliente.get('/platos')
       .then(res => setPlatos(res.data))
       .catch(err => console.error('Error cargando platos:', err));
   }, []);
 
-  // Esta función añade o quita un plato del pedido
   const togglePlato = (plato) => {
     const existe = seleccionados.find(p => p.plato_id === plato.id_plato);
     if (existe) {
-      // Si ya estaba, lo quitamos
       setSeleccionados(seleccionados.filter(p => p.plato_id !== plato.id_plato));
     } else {
-      // Si no estaba, lo añadimos con cantidad 1
       setSeleccionados([...seleccionados, {
         plato_id: plato.id_plato,
         cantidad: 1,
@@ -32,7 +30,6 @@ const PedidoDomicilio = () => {
     }
   };
 
-  // Cambiamos la cantidad de un plato ya seleccionado
   const cambiarCantidad = (plato_id, cantidad) => {
     setSeleccionados(prev =>
       prev.map(p =>
@@ -41,12 +38,10 @@ const PedidoDomicilio = () => {
     );
   };
 
-  // Calculamos el total del pedido sumando (precio * cantidad) de cada plato
   const calcularTotal = () => {
     return seleccionados.reduce((total, p) => total + p.precio * p.cantidad, 0);
   };
 
-  // Enviamos el pedido al backend
   const enviarPedido = async () => {
     if (!direccion.trim()) {
       setMensaje('❌ Debes indicar una dirección');
@@ -61,9 +56,11 @@ const PedidoDomicilio = () => {
       });
 
       setMensaje('✅ Pedido enviado correctamente');
-      setSeleccionados([]); // vaciamos el pedido
-      setDireccion('');     // y también la dirección
+      setSeleccionados([]);
+      setDireccion('');
+      navigate('/');
     } catch (err) {
+      console.error('Error al enviar pedido:', err);
       setMensaje('❌ Error al enviar pedido');
     }
   };
@@ -72,10 +69,8 @@ const PedidoDomicilio = () => {
     <div className="container mt-4">
       <h2>🛵 Pedido a domicilio</h2>
 
-      {/* Mensaje de error o éxito */}
       {mensaje && <div className="alert alert-info">{mensaje}</div>}
 
-      {/* Campo para escribir la dirección del envío */}
       <div className="mb-3">
         <label className="form-label">Dirección de entrega</label>
         <input
@@ -87,7 +82,6 @@ const PedidoDomicilio = () => {
         />
       </div>
 
-      {/* Listado de platos del menú */}
       <div className="row">
         {platos.map(plato => {
           const estaSeleccionado = seleccionados.find(p => p.plato_id === plato.id_plato);
@@ -99,7 +93,6 @@ const PedidoDomicilio = () => {
                   <p>{plato.descripcion}</p>
                   <p><strong>{Number(plato.precio).toFixed(2)} €</strong></p>
 
-                  {/* Si el plato ya está en el pedido, mostramos el input para cantidad */}
                   {estaSeleccionado && (
                     <input
                       type="number"
@@ -110,7 +103,6 @@ const PedidoDomicilio = () => {
                     />
                   )}
 
-                  {/* Botón para añadir o quitar el plato */}
                   <button className="btn btn-primary" onClick={() => togglePlato(plato)}>
                     {estaSeleccionado ? 'Quitar' : 'Añadir'}
                   </button>
@@ -121,7 +113,6 @@ const PedidoDomicilio = () => {
         })}
       </div>
 
-      {/* Si hay platos seleccionados, mostramos el total y el botón para confirmar */}
       {seleccionados.length > 0 && (
         <>
           <div className="mt-3">

@@ -29,7 +29,12 @@ const Historial = () => {
 
     axiosCliente.post(endpoint, { estado: nuevoEstado })
       .then(() => cargarDatos()) // recargamos la lista al cambiar el estado
-      .catch(err => console.error('Error actualizando estado:', err));
+      .catch(err => {
+        console.error('Error actualizando estado:', err);
+        if (err.response) {
+          console.error('Detalles del error:', err.response.data);
+        }
+      });
   };
 
   // Al montar el componente o cuando cambia el modo (reservas/pedidos), pedimos los datos
@@ -94,6 +99,7 @@ const Historial = () => {
                 <>
                   <h5>Fecha: {dato.fecha_reserva} - {dato.hora_reserva}</h5>
                   <p><strong>Personas:</strong> {dato.numero_personas}</p>
+                  <p><strong>Total:</strong> {Number(dato.subtotal || 0).toFixed(2)} €</p>
                 </>
               ) : (
                 <>
@@ -126,13 +132,19 @@ const Historial = () => {
                 <div className="mt-3">
                   <button
                     className="btn btn-success me-2"
-                    onClick={() => cambiarEstado(dato.reserva_id || dato.id_pedido, 'aceptada')}
+                    onClick={() => cambiarEstado(
+                      dato.reserva_id || dato.id_pedido,
+                      modo === 'reservas' ? 'aceptada' : 'aceptado'
+                    )}
                   >
                     Aceptar
                   </button>
                   <button
                     className="btn btn-danger"
-                    onClick={() => cambiarEstado(dato.reserva_id || dato.id_pedido, 'rechazada')}
+                    onClick={() => cambiarEstado(
+                      dato.reserva_id || dato.id_pedido,
+                      'rechazada'
+                    )}
                   >
                     Rechazar
                   </button>

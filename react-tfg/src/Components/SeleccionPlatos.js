@@ -1,23 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import axiosCliente from './AxiosCliente'; // Ajusta la ruta si está en otra carpeta
+import axiosCliente from './AxiosCliente';
 
 const SeleccionPlatos = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const reservaId = location.state?.reservaId;
+  const usuario = JSON.parse(localStorage.getItem('usuario'));
 
   const [platos, setPlatos] = useState([]);
   const [seleccionados, setSeleccionados] = useState([]);
   const [mensaje, setMensaje] = useState('');
 
-  // Validar que haya reservaId
+  // Redirige si no hay reserva o usuario
   useEffect(() => {
-    if (!reservaId) {
-      alert('❌ No se encontró una reserva válida.');
-      navigate('/'); // O redirige a otra página que tenga sentido
+    if (!reservaId || !usuario) {
+      navigate('/');
     }
-  }, [reservaId, navigate]);
+  }, [reservaId, usuario, navigate]);
 
   // Cargar platos
   useEffect(() => {
@@ -54,6 +54,7 @@ const SeleccionPlatos = () => {
       });
       setMensaje('✅ Platos añadidos correctamente a la reserva');
       setSeleccionados([]);
+      navigate('/');
     } catch (error) {
       console.error('Error al enviar platos:', error);
       setMensaje('❌ Error al guardar los platos');
@@ -63,6 +64,9 @@ const SeleccionPlatos = () => {
   const calcularTotal = () => {
     return seleccionados.reduce((total, p) => total + p.precio * p.cantidad, 0);
   };
+
+  // No renderiza nada si no hay reserva o usuario (previene errores visuales)
+  if (!reservaId || !usuario) return null;
 
   return (
     <div className="container mt-4">
